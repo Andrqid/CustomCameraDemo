@@ -37,6 +37,7 @@ import android.view.Surface;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -426,11 +427,21 @@ class Camera2 extends CameraViewImpl {
         }
         mPictureSizes.clear();
         collectPictureSizes(mPictureSizes, map);
-        for (AspectRatio ratio : mPreviewSizes.ratios()) {
+
+        Iterator<AspectRatio> iterator = mPreviewSizes.ratios().iterator();
+        while (iterator.hasNext()) {
+            AspectRatio ratio = iterator.next();
             if (!mPictureSizes.ratios().contains(ratio)) {
-                mPreviewSizes.remove(ratio);
+                iterator.remove();
             }
         }
+
+        // error
+//        for (AspectRatio ratio : mPreviewSizes.ratios()) {
+//            if (!mPictureSizes.ratios().contains(ratio)) {
+//                mPreviewSizes.remove(ratio);
+//            }
+//        }
 
         if (!mPreviewSizes.ratios().contains(mAspectRatio)) {
             mAspectRatio = mPreviewSizes.ratios().iterator().next();
@@ -505,8 +516,10 @@ class Camera2 extends CameraViewImpl {
         }
         SortedSet<Size> candidates = mPreviewSizes.sizes(mAspectRatio);
 
+        Log.e("chooseOptimalSize", "surfaceLonger = " + surfaceLonger + ", surfaceShorter" + surfaceShorter);
         // Pick the smallest of those big enough
         for (Size size : candidates) {
+            Log.e("chooseOptimalSize", "width = " + size.getWidth() + ", height = " + size.getHeight());
             if (size.getWidth() >= surfaceLonger && size.getHeight() >= surfaceShorter) {
                 return size;
             }

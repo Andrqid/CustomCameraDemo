@@ -32,6 +32,8 @@ class TextureViewPreview extends PreviewImpl {
 
     private int mDisplayOrientation;
 
+    private int mBufferWidth, mBufferHeight;
+
     TextureViewPreview(Context context, ViewGroup parent) {
         final View view = View.inflate(context, R.layout.texture_view, parent);
         mTextureView = view.findViewById(R.id.texture_view);
@@ -67,6 +69,8 @@ class TextureViewPreview extends PreviewImpl {
     @TargetApi(15)
     @Override
     void setBufferSize(int width, int height) {
+        mBufferWidth = width;
+        mBufferHeight = height;
         mTextureView.getSurfaceTexture().setDefaultBufferSize(width, height);
     }
 
@@ -107,9 +111,9 @@ class TextureViewPreview extends PreviewImpl {
      */
     void configureTransform() {
         Matrix matrix = new Matrix();
+        final int width = getWidth();
+        final int height = getHeight();
         if (mDisplayOrientation % 180 == 90) {
-            final int width = getWidth();
-            final int height = getHeight();
             // Rotate the camera preview when the screen is landscape.
             matrix.setPolyToPoly(
                     new float[]{
@@ -134,9 +138,13 @@ class TextureViewPreview extends PreviewImpl {
                                     0.f, height, // bottom right
                             }, 0,
                     4);
+
+//            matrix.postScale(height / (float)mBufferWidth / mBufferHeight, 1f, width / 2, height / 2);
         } else if (mDisplayOrientation == 180) {
             matrix.postRotate(180, getWidth() / 2, getHeight() / 2);
+//            matrix.postScale(1f, (float)mBufferWidth / mBufferHeight * getWidth(), width / 2, height / 2);
         }
+
         mTextureView.setTransform(matrix);
     }
 

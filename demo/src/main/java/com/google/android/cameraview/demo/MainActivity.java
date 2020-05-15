@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements
         ActivityCompat.OnRequestPermissionsResultCallback,
         AspectRatioFragment.Listener {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "GoogleMainActivity";
 
     private static final int REQUEST_CAMERA_PERMISSION = 1;
 
@@ -256,7 +256,8 @@ public class MainActivity extends AppCompatActivity implements
                 @Override
                 public void run() {
                     File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                            "picture.jpg");
+                            "picture_" + System.currentTimeMillis() + ".jpg");
+                    Log.d(TAG, "file path " + file.getPath());
                     OutputStream os = null;
                     try {
                         os = new FileOutputStream(file);
@@ -270,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements
                                 os.close();
                             } catch (IOException e) {
                                 // Ignore
+                                Log.w(TAG, "close exception " + e.toString());
                             }
                         }
                     }

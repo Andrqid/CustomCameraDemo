@@ -18,6 +18,7 @@ package com.google.android.cameraview;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Parcel;
@@ -27,6 +28,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.FrameLayout;
 
 import java.lang.annotation.Retention;
@@ -128,11 +131,11 @@ public class CameraView extends FrameLayout {
     @NonNull
     private PreviewImpl createPreviewImpl(Context context) {
         PreviewImpl preview;
-        if (Build.VERSION.SDK_INT >= 23) {
-            preview = new SurfaceViewPreview(context, this);
-        } else {
+//        if (Build.VERSION.SDK_INT >= 23) {
+//            preview = new SurfaceViewPreview(context, this);
+//        } else {
             preview = new TextureViewPreview(context, this);
-        }
+//        }
         return preview;
     }
 
@@ -165,9 +168,64 @@ public class CameraView extends FrameLayout {
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 return;
             }
+//            final AspectRatio ratio = getAspectRatio();
+//            if(null != ratio) {
+//                int width = 0;
+//                int height = 0;
+//                final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+//                if (Configuration.ORIENTATION_PORTRAIT == getResources().getConfiguration().orientation) {
+//                    width = displayMetrics.widthPixels;
+//                    height = (int) (ratio.toFloat() * width);
+//                } else {
+//                    height = displayMetrics.heightPixels;
+//                    width = (int) (ratio.toFloat() * height);
+//                }
+//                Log.e("TextureView", "parent, width = " + width + ", height = " + height);
+//                super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
+//            } else {
+//                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//            }
+
+
             final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
             final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-            if (widthMode == MeasureSpec.EXACTLY && heightMode != MeasureSpec.EXACTLY) {
+            if(widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY) {
+                int height = MeasureSpec.getSize(heightMeasureSpec);
+                int width = MeasureSpec.getSize(widthMeasureSpec);
+                float viewRatio = (float) width / height;
+                final AspectRatio ratio = getAspectRatio();
+                final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+                if (Configuration.ORIENTATION_PORTRAIT == getResources().getConfiguration().orientation) {
+//                    if(1 / viewRatio > ratio.toFloat()) {
+//                        width = (int) (height / ratio.toFloat());
+//                    } else {
+//                        height = (int) (ratio.toFloat() * width);
+//                    }
+                    int newheight = (int) (ratio.toFloat() * width);
+                    if(newheight > height) {
+                        width = (int) (height / ratio.toFloat());
+                    } else {
+                        height = newheight;
+                    }
+                } else {
+//                    if(viewRatio > ratio.toFloat()) {
+//                        height = (int) (width / ratio.toFloat());
+//                    } else {
+//                        width = (int) (height * ratio.toFloat());
+//                    }
+
+                    int newWidth = (int) (ratio.toFloat() * height);
+                    if(newWidth > width) {
+                        height = (int) (width / ratio.toFloat());
+                    } else {
+                        width = newWidth;
+                    }
+                }
+                Log.e("TextureView", "parent, width = " + width + ", height = " + height);
+                super.onMeasure(
+                        MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+                        MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
+            } else if (widthMode == MeasureSpec.EXACTLY && heightMode != MeasureSpec.EXACTLY) {
                 final AspectRatio ratio = getAspectRatio();
                 assert ratio != null;
                 int height = (int) (MeasureSpec.getSize(widthMeasureSpec) * ratio.toFloat());
@@ -192,6 +250,8 @@ public class CameraView extends FrameLayout {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
         // Measure the TextureView
+//        Log.e("TextureView", "width = " + getMeasuredWidth() + ", height = " + getMeasuredHeight());
+//        mImpl.getView().measure(MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
         AspectRatio ratio = getAspectRatio();
